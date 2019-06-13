@@ -1,5 +1,6 @@
 use sagume::analysis::StandardAnalyzer;
-use sagume::document::*;
+use sagume::document::Document;
+use sagume::field::Field;
 use sagume::index::{IndexWriter, IndexWriterConfig};
 use sagume::store::RAMDirectory;
 
@@ -11,15 +12,9 @@ fn main() {
 
     let w = IndexWriter::new(index, config);
 
-    let doc = Document::new();
-    doc.add(TextField::new(
-        "title".to_string(),
-        "Lucene in Action".to_string(),
-    ));
-    doc.add(StringField::new(
-        "isbn".to_string(),
-        "193398817".to_string(),
-    ));
+    let mut doc = Document::new();
+    doc.add(Field::new_text("title".into(), "Lucene in Action".into()));
+    doc.add(Field::new_u64("isbn".into(), 193398817));
     w.add_document(doc);
     w.close();
 }
