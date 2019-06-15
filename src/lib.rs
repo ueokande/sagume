@@ -5,4 +5,6 @@ pub mod index;
 pub mod store;
 
 pub mod query;
+pub mod token;
+pub mod tokenizer;
 pub mod vector;
