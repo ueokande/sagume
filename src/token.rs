@@ -1,5 +1,5 @@
-use std::cell::{Ref, RefCell};
-use std::collections::{HashMap, HashSet};
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Eq, PartialEq, Clone)]
@@ -71,7 +71,7 @@ impl TokenSet {
 
         while stack.len() > 0 {
             let frame = stack.pop().unwrap();
-            if (frame.source.len() > 0) {
+            if frame.source.len() > 0 {
                 let c = frame.source.chars().into_iter().next().unwrap();
                 let no_edit_node: Rc<RefCell<TokenSetNode>>;
                 if frame.node.borrow().edges.contains_key(&c) {
@@ -96,7 +96,7 @@ impl TokenSet {
                     source: frame.source[1..].to_string(),
                 });
             }
-            if (frame.edits_remaining == 0) {
+            if frame.edits_remaining == 0 {
                 continue;
             }
             let insertion_node = if frame.node.borrow().edges.contains_key(&'*') {
@@ -185,7 +185,7 @@ impl TokenSet {
             node: Rc<RefCell<TokenSetNode>>,
         }
 
-        let mut output = Rc::new(RefCell::new(TokenSetNode {
+        let output = Rc::new(RefCell::new(TokenSetNode {
             last: false,
             edges: HashMap::new(),
         }));
@@ -195,10 +195,10 @@ impl TokenSet {
             node: Rc::clone(&self.root),
         }];
 
-        while (stack.len() > 0) {
+        while stack.len() > 0 {
             let frame = stack.pop().unwrap();
-            for (q_key, q_edge) in frame.q_node.borrow().edges.iter() {
-                for (n_key, n_edge) in frame.node.borrow().edges.iter() {
+            for q_key in frame.q_node.borrow().edges.keys() {
+                for n_key in frame.node.borrow().edges.keys() {
                     if *n_key != *q_key && *q_key != '*' {
                         continue;
                     }
