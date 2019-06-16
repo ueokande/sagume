@@ -27,10 +27,6 @@ impl TokenSet {
         builder.build()
     }
 
-    pub fn from_fuzzy_string(source: String, edit_distance: bool) -> TokenSet {
-        panic!("Not implemented!!");
-    }
-
     pub fn from_string(source: String) -> TokenSet {
         let mut root = Rc::new(RefCell::new(TokenSetNode {
             last: false,
@@ -54,6 +50,131 @@ impl TokenSet {
                 node = next
             }
         }
+        TokenSet { root }
+    }
+
+    pub fn from_fuzzy_string(source: String, edit_distance: u64) -> TokenSet {
+        struct Frame {
+            node: Rc<RefCell<TokenSetNode>>,
+            edits_remaining: u64,
+            source: String,
+        }
+        let root = Rc::new(RefCell::new(TokenSetNode {
+            last: false,
+            edges: HashMap::new(),
+        }));
+        let mut stack: Vec<Frame> = vec![Frame {
+            node: Rc::clone(&root),
+            edits_remaining: edit_distance,
+            source: source.to_string(),
+        }];
+
+        while stack.len() > 0 {
+            let frame = stack.pop().unwrap();
+            if (frame.source.len() > 0) {
+                let c = frame.source.chars().into_iter().next().unwrap();
+                let no_edit_node: Rc<RefCell<TokenSetNode>>;
+                if frame.node.borrow().edges.contains_key(&c) {
+                    no_edit_node = Rc::clone(frame.node.borrow().edges.get(&c).unwrap());
+                } else {
+                    no_edit_node = Rc::new(RefCell::new(TokenSetNode {
+                        last: false,
+                        edges: HashMap::new(),
+                    }));
+                    frame
+                        .node
+                        .borrow_mut()
+                        .edges
+                        .insert(c, Rc::clone(&no_edit_node));
+                }
+                if frame.source.len() == 1 {
+                    no_edit_node.borrow_mut().last = true;
+                }
+                stack.push(Frame {
+                    node: no_edit_node,
+                    edits_remaining: frame.edits_remaining,
+                    source: frame.source[1..].to_string(),
+                });
+            }
+            if (frame.edits_remaining == 0) {
+                continue;
+            }
+            let insertion_node = if frame.node.borrow().edges.contains_key(&'*') {
+                Rc::clone(frame.node.borrow().edges.get(&'*').unwrap())
+            } else {
+                let n = Rc::new(RefCell::new(TokenSetNode {
+                    edges: HashMap::new(),
+                    last: false,
+                }));
+                frame.node.borrow_mut().edges.insert('*', Rc::clone(&n));
+                n
+            };
+            if frame.source.len() == 0 {
+                insertion_node.borrow_mut().last = true;
+            }
+            stack.push(Frame {
+                node: insertion_node,
+                edits_remaining: frame.edits_remaining - 1,
+                source: frame.source.to_string(),
+            });
+
+            if frame.source.len() > 1 {
+                stack.push(Frame {
+                    node: Rc::clone(&frame.node),
+                    edits_remaining: frame.edits_remaining - 1,
+                    source: frame.source[1..].to_string(),
+                });
+            }
+            if frame.source.len() == 1 {
+                frame.node.borrow_mut().last = true;
+            }
+
+            if frame.source.len() >= 1 {
+                let substitution_node = if frame.node.borrow().edges.contains_key(&'*') {
+                    Rc::clone(frame.node.borrow().edges.get(&'*').unwrap())
+                } else {
+                    let n = Rc::new(RefCell::new(TokenSetNode {
+                        last: false,
+                        edges: HashMap::new(),
+                    }));
+                    frame.node.borrow_mut().edges.insert('*', Rc::clone(&n));
+                    n
+                };
+                if frame.source.len() == 1 {
+                    substitution_node.borrow_mut().last = true
+                }
+                stack.push(Frame {
+                    node: substitution_node,
+                    edits_remaining: frame.edits_remaining - 1,
+                    source: frame.source[1..].to_string(),
+                })
+            }
+
+            if frame.source.len() > 1 {
+                let mut chars = frame.source.chars().into_iter();
+                let c1 = chars.next().unwrap();
+                let c2 = chars.next().unwrap();
+                let transpose_node = if frame.node.borrow().edges.contains_key(&c2) {
+                    Rc::clone(frame.node.borrow().edges.get(&c2).unwrap())
+                } else {
+                    let n = Rc::new(RefCell::new(TokenSetNode {
+                        last: false,
+                        edges: HashMap::new(),
+                    }));
+                    frame.node.borrow_mut().edges.insert(c2, Rc::clone(&n));
+                    n
+                };
+                if frame.source.len() == 1 {
+                    transpose_node.borrow_mut().last = true;
+                }
+                stack.push(Frame {
+                    node: Rc::clone(&transpose_node),
+                    edits_remaining: frame.edits_remaining - 1,
+                    source: (c1.to_string() + &frame.source[2..]).to_string(),
+                })
+            }
+        }
+
         TokenSet { root }
     }
 
