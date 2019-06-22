@@ -9,6 +9,12 @@ pub struct Token {
     pub value: String,
 }
 
+impl Token {
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+}
+
 pub struct TokenSet {
     root: Rc<RefCell<TokenSetNode>>,
 }

@@ -1,6 +1,5 @@
 extern crate sagume;
 
-use sagume::token::Token;
 use sagume::tokenizer::Tokenizer;
 
 #[test]

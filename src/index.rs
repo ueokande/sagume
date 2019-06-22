@@ -1,31 +1,16 @@
-use crate::analysis::*;
-use crate::document::Document;
-use crate::store::Directory;
+use crate::token::TokenSet;
+use crate::vector::Vector;
+use std::collections::{HashMap, HashSet};
 
-pub struct IndexWriterConfig {}
-
-impl IndexWriterConfig {
-    pub fn new<T>(analyzer: T) -> IndexWriterConfig
-    where
-        T: Analyzer,
-    {
-        return IndexWriterConfig {};
-    }
+#[derive(Eq, PartialEq, Clone)]
+pub struct InvertedIndex {
+    pub index: u64,
+    pub documents: HashMap<String, HashSet<String>>, // field_name -> []document_ref
 }
 
-pub struct IndexWriter {}
-
-impl IndexWriter {
-    pub fn new<T>(directory: T, config: IndexWriterConfig) -> IndexWriter
-    where
-        T: Directory,
-    {
-        return IndexWriter {};
-    }
-
-    pub fn add_document(&self, doc: Document) {
-        panic!("Not implemented")
-    }
-
-    pub fn close(&self) {}
+pub struct Index {
+    pub inverted_index: HashMap<String, InvertedIndex>,
+    pub field_vectors: HashMap<String, Vector>,
+    pub token_set: TokenSet,
+    pub field_names: HashSet<String>,
 }

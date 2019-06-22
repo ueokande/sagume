@@ -1,15 +1,23 @@
 use crate::field::{Field, FieldValue};
 
 pub struct Document {
+    doc_ref: String,
     fields: Vec<Field>,
 }
 
 impl Document {
-    pub fn new() -> Document {
-        Document { fields: Vec::new() }
+    pub fn new(doc_ref: String) -> Document {
+        Document {
+            doc_ref,
+            fields: Vec::new(),
+        }
     }
 
-    pub fn add(&mut self, field: Field) {
+    pub fn doc_ref(&self) -> &str {
+        return &self.doc_ref;
+    }
+
+    pub fn add_field(&mut self, field: Field) {
         self.fields.push(field)
     }
 
@@ -35,7 +43,7 @@ impl Document {
     }
 
     pub fn get_all_fields(&self) -> Vec<&Field> {
-        return self.fields.iter().collect();
+        self.fields.iter().collect()
     }
 
     pub fn get_values(&self, name: String) -> Vec<FieldValue> {

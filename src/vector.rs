@@ -1,9 +1,10 @@
-// #[derive(Eq, PartialEq, Clone)]
+#[derive(Clone)]
 struct Element {
     index: usize,
     value: f64,
 }
 
+#[derive(Clone)]
 pub struct Vector {
     elements: Vec<Element>,
 }
