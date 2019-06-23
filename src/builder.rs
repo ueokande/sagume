@@ -94,12 +94,12 @@ impl Builder {
     }
 
     pub fn build(&mut self) -> Index {
-        Index {
-            inverted_index: self.inverted_index.clone(),
-            field_vectors: self.create_field_vectors(),
-            token_set: self.create_token_set(),
-            field_names: self.field_names.clone(),
-        }
+        Index::new(
+            self.inverted_index.clone(),
+            self.create_field_vectors(),
+            self.create_token_set(),
+            self.field_names.clone(),
+        )
     }
 
     fn calculate_average_field_length(&self) -> HashMap<String, f64> {
@@ -122,8 +122,8 @@ impl Builder {
         return accumulator;
     }
 
-    fn create_field_vectors(&self) -> HashMap<String, Vector> {
-        let mut field_vectors = HashMap::new();
+    fn create_field_vectors(&self) -> HashMap<FieldRef, Vector> {
+        let mut field_vectors: HashMap<FieldRef, Vector> = HashMap::new();
         let average_field_length = self.calculate_average_field_length();
 
         for field_ref in self.field_term_frequencies.keys() {
@@ -153,7 +153,7 @@ impl Builder {
                 let score_wth_precision = (score * 1000.0).round() / 1000.0;
                 field_vector.insert(term_index as usize, score_wth_precision);
             }
-            field_vectors.insert(field_ref.to_str(), field_vector);
+            field_vectors.insert(field_ref.clone(), field_vector);
         }
         return field_vectors;
     }

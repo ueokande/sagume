@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use crate::query::Clause;
+
 #[derive(Eq, PartialEq, Clone)]
 pub struct Token {
     pub index: usize,
@@ -168,6 +170,10 @@ impl TokenSet {
         }
 
         TokenSet { root }
+    }
+
+    pub fn from_clause(clause: &Clause) -> TokenSet {
+        TokenSet::from_string(clause.term.to_string())
     }
 
     pub fn intersect(&self, b: &Self) -> TokenSet {

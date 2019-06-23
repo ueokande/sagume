@@ -15,6 +15,7 @@ impl Vector {
             elements: Vec::new(),
         }
     }
+
     pub fn from(values: Vec<f64>) -> Vector {
         let mut eles = Vec::with_capacity(values.len());
         for (i, v) in values.into_iter().enumerate() {
@@ -51,6 +52,13 @@ impl Vector {
             }
         }
         product
+    }
+
+    pub fn get(&self, index: usize) -> Option<f64> {
+        self.elements
+            .iter()
+            .find(|&e| e.index == index)
+            .map(|e| e.value)
     }
 
     pub fn insert(&mut self, index: usize, value: f64) {

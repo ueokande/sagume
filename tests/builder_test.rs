@@ -19,7 +19,7 @@ fn test_build() {
     let index = b.build();
 
     assert!(index
-        .inverted_index
+        .inverted_index()
         .get("lucene")
         .unwrap()
         .documents
@@ -27,12 +27,12 @@ fn test_build() {
         .unwrap()
         .contains("1"));
     assert!(index
-        .field_vectors
-        .contains_key(&FieldRef::new("1".into(), "title".into()).to_str()));
+        .field_vectors()
+        .contains_key(&FieldRef::new("1".into(), "title".into())));
 
     assert_eq!(
         index
-            .token_set
+            .token_set()
             .intersect(&TokenSet::from_string("action".into()))
             .to_vec(),
         vec!["action"],
