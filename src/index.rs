@@ -68,12 +68,17 @@ impl Index {
         let mut matching_fields: HashMap<FieldRef, MatchData> = HashMap::new();
 
         for clause in &query.clauses {
+            let query_fields: Vec<String> = clause
+                .fields
+                .clone()
+                .unwrap_or(self.field_names.iter().map(|f| f.to_string()).collect());;
+
             let mut clause_matches = self.complete_doc_refs.clone();
             let term_token_set = TokenSet::from_clause(&clause);
             let expanded_terms = term_token_set.intersect(&term_token_set);
 
-            if expanded_terms.to_vec().is_empty() && clause.option.presence == Presence::Required {
-                for field in &clause.option.fields {
+            if expanded_terms.to_vec().is_empty() && clause.presence == Presence::Required {
+                for field in query_fields.iter() {
                     required_matches.insert(field.to_string(), HashSet::new());
                 }
                 break;
@@ -81,9 +86,9 @@ impl Index {
 
             for expanded_term in expanded_terms.to_vec() {
                 let ri = self.inverted_index.get(&expanded_term).unwrap();
-                for field in &clause.option.fields {
+                for field in query_fields.iter() {
                     let matching_docs = ri.documents.get(field.into()).unwrap();
-                    if clause.option.presence == Presence::Required {
+                    if clause.presence == Presence::Required {
                         for doc in matching_docs {
                             clause_matches.insert(doc.to_string());
                         }
@@ -93,7 +98,7 @@ impl Index {
                         }
                     }
 
-                    if clause.option.presence == Presence::Prohibited {
+                    if clause.presence == Presence::Prohibited {
                         if !prohibited_matches.contains_key(&field.to_string()) {
                             prohibited_matches.insert(field.to_string(), HashSet::new());
                         }
@@ -114,7 +119,7 @@ impl Index {
                     query_vectors
                         .get_mut(&field.to_string())
                         .unwrap()
-                        .upsert(ri.index as usize, boost + clause.option.boost as f64);
+                        .upsert(ri.index as usize, boost + clause.boost as f64);
 
                     for doc_ref in matching_docs {
                         let field_ref = FieldRef::new(doc_ref.to_string(), field.to_string());
@@ -129,8 +134,8 @@ impl Index {
                 }
             }
 
-            if clause.option.presence == Presence::Required {
-                for field in &clause.option.fields {
+            if clause.presence == Presence::Required {
+                for field in query_fields.iter() {
                     let old = required_matches.remove(field).unwrap();
                     required_matches.insert(
                         field.to_string(),
@@ -232,4 +237,14 @@ impl MatchData {
 pub struct MatchResult {
     doc_ref: String,
     score: f64,
+}
+
+impl MatchResult {
+    pub fn doc_ref(&self) -> &str {
+        &self.doc_ref
+    }
+
+    pub fn score(&self) -> f64 {
+        self.score
+    }
 }

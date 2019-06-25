@@ -8,8 +8,6 @@ impl Tokenizer {
     }
 
     pub fn tokenize(&self, source: String) -> Vec<Token> {
-        let chars = source.chars();
-
         let source = source.trim_end().to_lowercase();
         let mut start = 0;
         let mut tokens: Vec<Token> = Vec::new();

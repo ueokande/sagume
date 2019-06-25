@@ -392,7 +392,7 @@ fn test_to_str() {
     assert_ne!(non_last.to_str(), last.to_str());
     assert_eq!(last.to_str(), other_last.to_str());
 
-    let mut zero_edges = TokenSetNode::new();
+    let zero_edges = TokenSetNode::new();
     let mut one_edge = TokenSetNode::new();
     let mut two_edges = TokenSetNode::new();
     one_edge.edges.insert(

@@ -111,8 +111,7 @@ impl Builder {
             let count = docs_with_field.get(&field_name).unwrap_or(&0) + 1;
             docs_with_field.insert(field_name.to_string(), count);
 
-            let count = *accumulator.get(&field_name).unwrap_or(&0.0)
-                + *self.field_lengths.get(&field_ref).unwrap() as f64;
+            let count = *accumulator.get(&field_name).unwrap_or(&0.0) + *len as f64;
             accumulator.insert(field_name, count);
         }
 
@@ -173,8 +172,8 @@ impl Builder {
         for doc_refs in idx.documents.values() {
             documents_with_term += doc_refs.len()
         }
-        let x =
-            ((doc_count - documents_with_term) as f64 + 0.5) / (documents_with_term as f64 + 0.5);
+        let x = (doc_count as f64 - documents_with_term as f64 + 0.5)
+            / (documents_with_term as f64 + 0.5);
         return (x.abs() + 1.0).log(std::f64::consts::E);
     }
 }
