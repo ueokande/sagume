@@ -63,7 +63,6 @@ impl Vector {
 
     pub fn insert(&mut self, index: usize, value: f64) {
         if let Some(pos) = self.elements.iter().position(|e| e.index >= index) {
-            println!("inserting {} and {}", self.elements[pos].index, index);
             assert_ne!(self.elements[pos].index, index);
             self.elements.insert(pos, Element { index, value })
         } else {
