@@ -92,19 +92,19 @@ impl Index {
                         for doc in matching_docs {
                             clause_matches.insert(doc.to_string());
                         }
-                        if !required_matches.contains_key(&field.to_string()) {
+                        if !required_matches.contains_key(field) {
                             required_matches
                                 .insert(field.to_string(), self.complete_doc_refs.clone());
                         }
                     }
 
                     if clause.presence == Presence::Prohibited {
-                        if !prohibited_matches.contains_key(&field.to_string()) {
+                        if !prohibited_matches.contains_key(field) {
                             prohibited_matches.insert(field.to_string(), HashSet::new());
                         }
                         for doc in matching_docs {
                             prohibited_matches
-                                .get_mut(&field.to_string())
+                                .get_mut(field)
                                 .unwrap()
                                 .insert(doc.to_string());
                         }
@@ -112,12 +112,12 @@ impl Index {
                     }
 
                     let boost = query_vectors
-                        .get(&field.to_string())
+                        .get(field)
                         .unwrap()
                         .get(ri.index as usize)
                         .unwrap_or(0.0);
                     query_vectors
-                        .get_mut(&field.to_string())
+                        .get_mut(field)
                         .unwrap()
                         .upsert(ri.index as usize, boost + clause.boost as f64);
 
@@ -148,7 +148,7 @@ impl Index {
         }
 
         let mut all_required_matches = self.complete_doc_refs.clone();
-        let mut all_prohibited_matches = HashSet::new();
+        let mut all_prohibited_matches: HashSet<String> = HashSet::new();
         for field in &self.field_names {
             if required_matches.contains_key(field) {
                 let set = required_matches.get(field).unwrap();
@@ -156,7 +156,7 @@ impl Index {
             }
             if prohibited_matches.contains_key(field) {
                 for doc_ref in prohibited_matches.get(field).unwrap() {
-                    all_prohibited_matches.insert(doc_ref);
+                    all_prohibited_matches.insert(doc_ref.to_string());
                 }
             }
         }
@@ -173,10 +173,10 @@ impl Index {
         let mut doc_matches: HashMap<String, MatchResult> = HashMap::new();
         for field_ref in matching_field_refs {
             let doc_ref = field_ref.doc_ref();
-            if !all_required_matches.contains(&doc_ref.to_string()) {
+            if !all_required_matches.contains(doc_ref) {
                 continue;
             }
-            if all_prohibited_matches.contains(&doc_ref.to_string()) {
+            if all_prohibited_matches.contains(doc_ref) {
                 continue;
             }
 
@@ -185,7 +185,7 @@ impl Index {
                 .get(field_ref.field_name())
                 .unwrap()
                 .similarity(field_vector);
-            if let Some(mut m) = doc_matches.remove(&doc_ref.to_string()) {
+            if let Some(mut m) = doc_matches.remove(doc_ref) {
                 m.score += score;
                 doc_matches.insert(doc_ref.to_string(), m);
             } else {

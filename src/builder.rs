@@ -46,7 +46,7 @@ impl Builder {
         self.document_count += 1;
 
         for field in doc.get_all_fields().iter() {
-            let field_value = field.value().to_string();
+            let field_value = &field.value().to_string();
             let tokens = self.tokenizer.tokenize(field_value);
             let terms = self.pipeline.run(tokens);
             let field_ref = FieldRef::new(doc_ref.into(), field.name().into());
@@ -164,7 +164,7 @@ impl Builder {
             .map(|token| token.to_string())
             .collect();
         tokens.sort();
-        TokenSet::from_array(tokens)
+        TokenSet::from_array(&tokens)
     }
 
     fn idf(idx: &InvertedIndex, doc_count: usize) -> f64 {

@@ -163,12 +163,12 @@ fn test_intersect_with_fuzzy_string() {
 #[test]
 #[should_panic]
 fn test_from_array_unsorted() {
-    TokenSet::from_array(vec!["z".into(), "a".into()]);
+    TokenSet::from_array(&vec!["z".into(), "a".into()]);
 }
 
 #[test]
 fn test_from_array() {
-    let s = TokenSet::from_array(vec!["a".into(), "z".into()]);
+    let s = TokenSet::from_array(&vec!["a".into(), "z".into()]);
     let mut v1 = s.to_vec();
     v1.sort();
     let v2 = vec!["a", "z"];

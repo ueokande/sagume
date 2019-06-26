@@ -78,7 +78,7 @@ impl FieldRef {
         &self.field_name
     }
 
-    pub fn from_string(s: String) -> Result<FieldRef, FieldParseError> {
+    pub fn from_string(s: &str) -> Result<FieldRef, FieldParseError> {
         let splitten: Vec<&str> = s.splitn(2, FIELD_REF_JOINER).collect();
         if splitten.len() < 2 {
             return Err(FieldParseError);
@@ -87,9 +87,5 @@ impl FieldRef {
             field_name: splitten[0].to_string(),
             doc_ref: splitten[1].into(),
         })
-    }
-
-    pub fn to_str(&self) -> String {
-        self.field_name.to_string() + FIELD_REF_JOINER + &self.doc_ref.to_string()
     }
 }

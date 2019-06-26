@@ -32,16 +32,16 @@ pub struct TokenSetNode {
 }
 
 impl TokenSet {
-    pub fn from_array(tokens: Vec<String>) -> TokenSet {
+    pub fn from_array(tokens: &Vec<String>) -> TokenSet {
         let mut builder = TokenSetBuilder::new();
         for token in tokens {
-            builder.insert(token);
+            builder.insert(&token);
         }
         builder.finish();
         TokenSet { root: builder.root }
     }
 
-    pub fn from_string(source: String) -> TokenSet {
+    pub fn from_string(source: &str) -> TokenSet {
         let mut root = Rc::new(RefCell::new(TokenSetNode::new()));
         let mut node = Rc::clone(&mut root);
 
@@ -62,7 +62,7 @@ impl TokenSet {
         TokenSet { root }
     }
 
-    pub fn from_fuzzy_string(source: String, edit_distance: u64) -> TokenSet {
+    pub fn from_fuzzy_string(source: &str, edit_distance: u64) -> TokenSet {
         struct Frame {
             node: Rc<RefCell<TokenSetNode>>,
             edits_remaining: u64,
@@ -75,10 +75,8 @@ impl TokenSet {
             source: source.to_string(),
         }];
 
-        while stack.len() > 0 {
-            let frame = stack.pop().unwrap();
-            if frame.source.len() > 0 {
-                let c = frame.source.chars().into_iter().next().unwrap();
+        while let Some(frame) = stack.pop() {
+            if let Some(c) = frame.source.chars().into_iter().next() {
                 let no_edit_node: Rc<RefCell<TokenSetNode>>;
                 if frame.node.borrow().edges.contains_key(&c) {
                     no_edit_node = Rc::clone(frame.node.borrow().edges.get(&c).unwrap());
@@ -173,7 +171,7 @@ impl TokenSet {
     }
 
     pub fn from_clause(clause: &Clause) -> TokenSet {
-        TokenSet::from_string(clause.term.to_string())
+        TokenSet::from_string(&clause.term)
     }
 
     pub fn intersect(&self, b: &Self) -> TokenSet {
@@ -190,8 +188,7 @@ impl TokenSet {
             node: Rc::clone(&self.root),
         }];
 
-        while stack.len() > 0 {
-            let frame = stack.pop().unwrap();
+        while let Some(frame) = stack.pop() {
             for q_key in frame.q_node.borrow().edges.keys() {
                 for n_key in frame.node.borrow().edges.keys() {
                     if *n_key != *q_key && *q_key != '*' {
@@ -237,8 +234,8 @@ impl TokenSet {
             prefix: "".into(),
             node: Rc::clone(&self.root),
         }];
-        while stack.len() > 0 {
-            let frame = stack.pop().unwrap();
+
+        while let Some(frame) = stack.pop() {
             let node = frame.node.borrow();
             if node.last {
                 words.push(frame.prefix.to_string())
@@ -304,8 +301,8 @@ impl TokenSetBuilder {
         }
     }
 
-    fn insert(&mut self, word: String) {
-        if word < self.prev_word {
+    fn insert(&mut self, word: &str) {
+        if word < &self.prev_word {
             panic!("Out of order word insertion")
         }
 
@@ -341,7 +338,7 @@ impl TokenSetBuilder {
         }
 
         node.borrow_mut().last = true;
-        self.prev_word = word;
+        self.prev_word = word.to_string();
     }
 
     fn finish(&mut self) {
@@ -441,7 +438,7 @@ fn test_to_str() {
 
 #[test]
 fn test_from_array() {
-    let s = TokenSet::from_array(vec!["ac".into(), "dc".into()]);
+    let s = TokenSet::from_array(&vec!["ac".into(), "dc".into()]);
     let ac_node = s
         .root
         .borrow()
